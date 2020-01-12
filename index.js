@@ -4,7 +4,6 @@ import * as dat from 'dat.gui';
 
 import { OBJLoader } from './lib/OBJLoader.js';
 import { OrbitControls } from './lib/OrbitControls.js';
-import { PlaneBufferGeometry } from './lib/three.module.js';
 
 let container, controls, camera, scene, renderer;
 
@@ -174,7 +173,8 @@ function init() {
         object.scale.z = -0.5;
 
     }, onProgress, onError );
-    
+
+
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -216,11 +216,8 @@ function animate() {
 }
 
 
-function updateTexture(texture) {
-    texture = textureLoader.load( texture );
- 
-    console.log({object, texture})
-    // object.material.map.needsUpdate = true;
+function updateTexture(newTexture) {
+    texture = textureLoader.load( newTexture );
 }
 
 function render() {
