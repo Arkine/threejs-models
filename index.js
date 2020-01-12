@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import * as dat from 'dat.gui';
+ 
 
 import { OBJLoader } from './lib/OBJLoader.js';
 import { OrbitControls } from './lib/OrbitControls.js';
@@ -10,19 +12,86 @@ let mouseX = 0, mouseY = 0;
 const windowHalfX = window.innerWidth / 2;
 const windowHalfY = window.innerHeight / 2;
 
+const gui = new dat.GUI();
+
 let object;
+
+let textureLoader;
+let texture;
+
+// Camera gui
+const CamControls = function() {
+    this.x = 400;
+    this.y = 200;
+    this.z = 0;
+    this.fov = 60;
+    this.far = 6000;
+    this.near = .1;
+    this.zoom = 1;
+}
+
+let cc, cf;
+cc = new CamControls();
+cf = gui.addFolder('camera');
+cf.add(cc, 'x', -1000, 1000, 0.1).onChange(value => {
+    camera.position.set( cc.x, cc.y, cc.z );
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'y', -1000, 1000, 0.1).onChange(value => {
+    camera.position.set( cc.x, cc.y, cc.z );
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'z', -1000, 1000, 0.1).onChange(value => {
+    camera.position.set( cc.x, cc.y, cc.z );
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'fov', 1, 180, 1).onChange(value => {
+    camera.fov = value;
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'far', 0.1, 1000, 0.1).onChange(value => {
+    camera.far = value;
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'near', 0.1, 1000, 0.1).onChange(value => {
+    camera.near = value;
+    camera.updateProjectionMatrix();
+});
+cf.add(cc, 'zoom', 1, 1000,1).onChange(value => {
+    camera.zoom = value;
+    camera.updateProjectionMatrix();
+});
+
+// Material gui
+const materialControls = function() {
+    this.file = './assets/Textures/JPG/metal.jpg';
+
+}
+let mc, mf;
+mc = new materialControls();
+mf = gui.addFolder('Texture');
+
+mf.add(mc, 'file',  [
+    './assets/Textures/JPG/metal.jpg',
+    './assets/Textures/JPG/concbrick.jpg',
+    './assets/Textures/JPG/satin-black.jpg',
+]).onChange(newTexture =>  {
+    texture = textureLoader.load( newTexture );
+    texture.needsUpdate = true;
+});
+
 
 init();
 animate();
+
 
 function init() {
 
     container = document.createElement( 'div' );
     document.body.appendChild( container );
-
     
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, .1, 6000 );
-    camera.position.set( 400, 200, 0 );
+    camera = new THREE.PerspectiveCamera( cc.fov, window.innerWidth / window.innerHeight, cc.near, cc.far );
+    camera.position.set( cc.x, cc.y, cc.z );
 
     controls = new OrbitControls( camera, container );
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
@@ -66,8 +135,8 @@ function init() {
     };
 
     // texture
-    const textureLoader = new THREE.TextureLoader( manager );
-    const texture = textureLoader.load( './assets/Textures/JPG/metal.jpg' );
+    textureLoader = new THREE.TextureLoader( manager );
+    texture = textureLoader.load( mc.file );
 
     
     function onProgress( xhr ) {
@@ -121,6 +190,10 @@ function onDocumentMouseMove( event ) {
 
 }
 
+function onGuiUpdate() {
+
+}
+
 function animate() {
     controls.update();
     requestAnimationFrame( animate );
@@ -128,9 +201,17 @@ function animate() {
 
 }
 
+
+function updateTexture(texture) {
+    texture = textureLoader.load( texture );
+ 
+    console.log({object, texture})
+    // object.material.map.needsUpdate = true;
+}
+
 function render() {
-
-
+    // updateCamera();
+   
     renderer.render( scene, camera );
 
 }
