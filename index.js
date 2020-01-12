@@ -1,47 +1,49 @@
 import * as THREE from 'three';
 
 import { OBJLoader } from './lib/OBJLoader.js';
-import OrbitControls from 'three-orbit-controls';
+import { OrbitControls } from './lib/OrbitControls.js';
 
-var container;
+let container, controls, camera, scene, renderer;
 
+let mouseX = 0, mouseY = 0;
 
+const windowHalfX = window.innerWidth / 2;
+const windowHalfY = window.innerHeight / 2;
 
-var camera, scene, renderer;
-
-var mouseX = 0, mouseY = 0;
-
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
-var object;
+let object;
 
 init();
 animate();
-
 
 function init() {
 
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 6000 );
-    camera.zoom = -50;
-  
-    // scene
+    
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, .1, 6000 );
+    camera.position.set( 400, 200, 0 );
 
+    controls = new OrbitControls( camera, container );
+    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.dampingFactor = 0.05;
+
+    controls.screenSpacePanning = false;
+    controls.maxPolarAngle = Math.PI / 2;
+    controls.minDistance = .1;
+    controls.maxDistance = 5000;
+    // scene
     scene = new THREE.Scene();
 
-    var ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
+    const ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
     scene.add( ambientLight );
 
-    var pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+    const pointLight = new THREE.PointLight( 0xffffff, 0.8 );
     camera.add( pointLight );
     scene.add( camera );
   
 
     // manager
-
     function loadModel() {
 
         object.traverse( function ( child ) {
@@ -51,13 +53,12 @@ function init() {
         } );
 
         // object.scale.set(0.5, 0.5, 0.75);
-        object.position.y = - 95;
+        // object.position.y = - 95;
         scene.add( object );
 
     }
 
-    var manager = new THREE.LoadingManager( loadModel );
-
+    const manager = new THREE.LoadingManager( loadModel );
     manager.onProgress = function ( item, loaded, total ) {
 
         console.log( item, loaded, total );
@@ -65,13 +66,10 @@ function init() {
     };
 
     // texture
+    const textureLoader = new THREE.TextureLoader( manager );
+    const texture = textureLoader.load( './assets/Textures/JPG/metal.jpg' );
 
-    var textureLoader = new THREE.TextureLoader( manager );
-
-    var texture = textureLoader.load( './assets/Textures/JPG/metal.jpg' );
-
-    // model
-
+    
     function onProgress( xhr ) {
 
         if ( xhr.lengthComputable ) {
@@ -84,27 +82,22 @@ function init() {
     }
 
     function onError() {}
-
-    var loader = new OBJLoader( manager );
-
+    
+    // model
+    const loader = new OBJLoader( manager );
     loader.load( './assets/OBJ/metal_fence_without_proxy.obj', function ( obj ) {
 
         object = obj;
-        console.log({object})
+        object.scale.z = -0.5;
 
     }, onProgress, onError );
     
-    //
-
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild( renderer.domElement );
 
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-    //
-
     window.addEventListener( 'resize', onWindowResize, false );
 
 }
@@ -128,10 +121,8 @@ function onDocumentMouseMove( event ) {
 
 }
 
-//
-
 function animate() {
-
+    controls.update();
     requestAnimationFrame( animate );
     render();
 
@@ -139,10 +130,6 @@ function animate() {
 
 function render() {
 
-    camera.position.z += ( mouseY - camera.position.y ) / 5;
-    camera.position.x += ( - mouseX - camera.position.x ) / 5;
-    
-    camera.lookAt( scene.position );
 
     renderer.render( scene, camera );
 
