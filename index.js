@@ -204,10 +204,6 @@ function onDocumentMouseMove( event ) {
 
 }
 
-function onGuiUpdate() {
-
-}
-
 function animate() {
     controls.update();
     requestAnimationFrame( animate );
@@ -215,14 +211,7 @@ function animate() {
 
 }
 
-
-function updateTexture(newTexture) {
-    texture = textureLoader.load( newTexture );
-}
-
-function render() {
-    // updateCamera();
-   
+function render() { 
     renderer.render( scene, camera );
 
 }
