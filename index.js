@@ -4,13 +4,14 @@ import * as dat from 'dat.gui';
 
 import { OBJLoader } from './lib/OBJLoader.js';
 import { OrbitControls } from './lib/OrbitControls.js';
+import { PlaneBufferGeometry } from './lib/three.module.js';
 
 let container, controls, camera, scene, renderer;
 
 let mouseX = 0, mouseY = 0;
 
-const windowHalfX = window.innerWidth / 2;
-const windowHalfY = window.innerHeight / 2;
+let windowHalfX = window.innerWidth / 2;
+let windowHalfY = window.innerHeight / 2;
 
 const gui = new dat.GUI();
 
@@ -110,7 +111,6 @@ function init() {
     const pointLight = new THREE.PointLight( 0xffffff, 0.8 );
     camera.add( pointLight );
     scene.add( camera );
-  
 
     // manager
     function loadModel() {
@@ -128,6 +128,20 @@ function init() {
     }
 
     const manager = new THREE.LoadingManager( loadModel );
+
+    const planeTextureLoader = new THREE.ImageUtils.loadTexture('assets/Textures/JPG/grass_texture.jpg');
+    // planeTextureLoader.load();
+    planeTextureLoader.wrapT = THREE.RepeatWrapping;
+    planeTextureLoader.wrapS = THREE.RepeatWrapping;
+    planeTextureLoader.repeat.set( 100, 100 ); 
+    
+    const geo = new THREE.PlaneBufferGeometry(20000, 20000, 8, 8);
+    const mat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, map: planeTextureLoader });
+    const plane = new THREE.Mesh(geo, mat);
+    plane.rotateX( - Math.PI / 2);
+    scene.add(plane);
+
+ 
     manager.onProgress = function ( item, loaded, total ) {
 
         console.log( item, loaded, total );
